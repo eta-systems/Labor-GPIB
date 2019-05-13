@@ -11,7 +11,7 @@ Created on Sun May 12 20:28:14 2019
 import visa
 
 # wrapper for Prologix GPIB device (USB or Ethernet)
-import prologix_gpib
+import prologix_gpib as prologix
 # import individual devices
 import devices.hp3456a as hp3465a
 import devices.rhodeschwarz_ngmo2 as ngmo
@@ -35,7 +35,7 @@ interface has methods:
     - request (data_to_send)
 '''
 
-iface = prologix.usb(com='ASRL31::INSTR', baudrate=19200, timeout=2000)
+iface = prologix.usb(com='ASRL1::INSTR', baudrate=19200, timeout=2000)
 iface.mode('listen')  # ++mode 0
 print( iface.idn() )  # ++ irgendwas
 
