@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun May 12 21:05:35 2019
+Created on Tue May 14 09:33:31 2019
 
 @author: simon
+
+for hp 3488a switch control unit
 """
 
 class device:
@@ -10,9 +12,7 @@ class device:
         self.bus = iface
         self.address = address
     
-    # todo:
-    # ValueError with defined strings
-    # make action a boolean
+    # todo: delete and write actual methods
     def set_voltage(self, channel='A', voltage=0):
         if(channel not in 'ABab' or len(channel) != 1):
             raise ValueError('Channel can only be "A" or "B". channel = {}'.format(channel))

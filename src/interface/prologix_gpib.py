@@ -18,9 +18,6 @@ class usb:
         rm.list_resources()
         self.instr = rm.open_resource(self.com)
         
-    def get_baudrate(self):
-        return self.baudrate
-        
     def write(self, address, message):
         if(address < 10):
             if(address != self.address):
@@ -29,6 +26,13 @@ class usb:
             self.instr.write(message) 
     
     def request(self, address, message):
-        print(message)
+        if(address < 10):
+            if(address != self.address):
+                self.address = address
+                self.instr.write('++addr ' + str(self.address))
+            self.instr.write(message)
+            # ret = self.instr.read()
+            # return ret
+            
         
 
