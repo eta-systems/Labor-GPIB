@@ -6,13 +6,13 @@ Created on Sun May 12 20:55:54 2019
 """
 
 import time
-import interface.prologix_gpib
+import interface.prologix_gpib as prologix
 import devices.rohde_schwarz_ngmo2 as ngmo
 import devices.hp_3455a as hp3455
 import devices.hp_3488a as hp3488
 
 #%%
-iface = prologix_gpib.usb(baudrate=19200, timeout=2000)
+iface = prologix.usb(baudrate=19200, timeout=5000)
 print(iface.baudrate)
 
 #%% 
@@ -27,6 +27,10 @@ switcher = hp3488.device(iface, 7)
 
 #%%
 voltmeter = hp3455.device(iface, 9)
+iface.clr()
+iface.write(9, 'F1R2A0H0M3D1T3')
+iface.spoll()
+val = iface.request(9, '++read 10')
 
 
 
