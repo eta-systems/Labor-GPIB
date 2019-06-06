@@ -19,6 +19,11 @@ class usb:
         self.instr = rm.open_resource(self.com)
         self.write(self.address, '++clr')
         self.write(self.address, '++loc')
+        message = self.instr.query('++ver')
+        if('Prologix' in message):
+            print(message)
+        else:
+            raise RuntimeError('Prologix USB Adapter not connected')
     
     def set_address(self, address):
         if(address in range(0, 30)):
@@ -36,6 +41,9 @@ class usb:
     def read(self, address):
         self.set_address(address)
         return self.instr.read()
+    
+    def read(self, address, length):
+        return self.request(address, '++read ' + str(length))
     
     def request(self, address, message):
         self.set_address(address)

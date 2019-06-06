@@ -17,61 +17,40 @@ is the same as:
 
 import time
 import interface.prologix_gpib as prologix
+
 import devices.rohde_schwarz_ngmo2 as ngmo
 import devices.hp_3455a as hp3455
 import devices.hp_3488a as hp3488
 
+import devices.schlumberger_7150plus as schlumberger
+
+import numpy as np
+import matplotlib.pyplot as plt
+
 #%%
 iface = prologix.usb(com='ASRL31::INSTR', baudrate=19200, timeout=5000)
-print(iface.baudrate)
+iface.loc()  # Lokaler Modus
+schlumi = schlumberger.device(iface, 13)
 
 #%%
-voltmeter = hp3455.device(iface, 9)
-#%%
-iface.set_address(9)
-time.sleep(.100)
-iface.clr()
-time.sleep(.100)
-iface.loc()
-time.sleep(.100)
-iface.set_address(9)
-time.sleep(.100)
-iface.clr()
-time.sleep(.100)
-iface.write(9, 'F1R2A0H0M3D1T3')
-time.sleep(.100)
-iface.trg()
-time.sleep(.100)
-print( iface.spoll() )
+schlumi.measurement(mode='vdc')         # Vdc
+schlumi.range(range='auto')             # autorange
+schlumi.integral_period(period='0.006') # 6.66ms
+schlumi.trigger_type(trigger='single')  # single shot
+schlumi.units(False)                    # keine Einheiten
+
+values = np.zeros(20)                   # leeres Array mit 20 Werten
 
 #%%
-val = iface.request(9, '++read 10')
-print( val )
+for i in range(0, 20):
+    schlumi.trigger()           # single shot
+    values[i] = schlumi.read()  # Wert lesen, dauert min. 6.66ms
+
+plt.plot(values)                # plotten
+plt.ylabel('U [V]')
+plt.xlabel('Messung Nr.')
+
 
 #%%
-for k in range(10):
-    iface.clr()
-    time.sleep(.100)
-    iface.write(9, 'F1R2A0H0M3D1T3')
-    time.sleep(.100)
-    iface.trg()
-    time.sleep(.100)
-    print( iface.spoll() )
-    time.sleep(.100)
-    val = iface.request(9, '++read 10')
-    print( val )
-    
-
-
-
-#%% 
-battery = ngmo.device(iface, 9)
-battery.set_voltage('A', 12.4)
-battery.set_output('A', True)
-
-time.sleep(1.000)  # delay 1 second
-
-#%%
-switcher = hp3488.device(iface, 7)
 
 
