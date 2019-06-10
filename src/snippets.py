@@ -48,3 +48,27 @@ time.sleep(1.000)  # delay 1 second
 switcher = hp3488.device(iface, 7)
 
 
+#%%
+iface = prologix.usb(com='ASRL31::INSTR', baudrate=19200, timeout=5000)
+iface.loc()  # Lokaler Modus
+schlumi = schlumberger.device(iface, 13)
+
+#%%
+schlumi.measurement('vdc')         # Vdc
+schlumi.range('auto')             # autorange
+schlumi.integral_period('0.006') # 6.66ms
+schlumi.trigger_type('single')  # single shot
+schlumi.units(False)                    # keine Einheiten
+
+values = np.zeros(20)                   # leeres Array mit 20 Werten
+
+#%%
+for i in range(0, 20):
+    schlumi.trigger()           # single shot
+    values[i] = schlumi.read()  # Wert lesen, dauert min. 6.66ms
+
+plt.plot(values)                # plotten
+plt.ylabel('U [V]')
+plt.xlabel('Messung Nr.')
+
+

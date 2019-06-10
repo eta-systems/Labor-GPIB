@@ -6,7 +6,7 @@ Created on Sun May 12 20:51:03 2019
 """
 
 import visa
-import time
+from time import sleep
 
 class usb:
     def __init__(self, com='ASRL1::INSTR', baudrate=19200, timeout=2000):
@@ -42,20 +42,25 @@ class usb:
         self.set_address(address)
         return self.instr.read()
     
-    def read(self, address, length):
-        return self.request(address, '++read ' + str(length))
+    def read_eoi(self, address):
+        return self.request(address, '++read eoi')
+    
+    def read_until_char(self, address, char):
+        return self.request(address, '++read ', str(char))
     
     def request(self, address, message):
         self.set_address(address)
-        #self.instr.write(message) 
-        #ret = self.instr.read()
         print('requesting: ' + str(message))
         self.instr.write(message)
-        time.sleep(.100)
+        # sleep(.100)
         ret = self.instr.read()
         # ret = self.instr.query(message)
         return ret
             
+    def rst(self):
+        self.write(self.address, 'rst')
+        sleep(5.0)
+        
     def clr(self):
         self.write(self.address, '++clr')
     
