@@ -57,7 +57,7 @@ class device:
         self.clear()
         self.measurement('vdc')
         self.range('auto')
-        self.integral_period('0.006')
+        self.integral_period(0.006)
         self.trigger_mode('auto')
         self.enable_units(False)
         self.enable_srq(False)

@@ -46,7 +46,7 @@ class usb:
         return self.request(address, '++read eoi')
     
     def read_until_char(self, address, char):
-        return self.request(address, '++read ', str(char))
+        return self.request(address, '++read ' + str(char))
     
     def request(self, address, message):
         self.set_address(address)

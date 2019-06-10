@@ -71,4 +71,21 @@ plt.plot(values)                # plotten
 plt.ylabel('U [V]')
 plt.xlabel('Messung Nr.')
 
+#%%
+
+hp34 = hp3455.device(iface, 9)  # address 9 on prologix interface
+
+#%%
+values = np.zeros(20)         # leeres Array mit 20 Werten
+
+for i in range(0, 20):
+    hp34.trigger()            # single shot
+    values[i] = hp34.read_rqs()
+
+plt.plot(values)                # plotten
+plt.ylabel('U [V]')
+plt.xlabel('Messung Nr.')
+
+
+
 

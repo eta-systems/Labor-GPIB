@@ -18,6 +18,7 @@ The goal of this project is, to enable easy scripting of measurement procedures 
 ### Example
 
 ```python
+import time
 import interface.prologix_gpib as prologix
 import devices.schlumberger_7150plus as schlumberger
 
@@ -28,21 +29,16 @@ iface = prologix.usb(com='ASRL31::INSTR', baudrate=19200, timeout=5000)
 iface.loc()  # Lokaler Modus
 schlumi = schlumberger.device(iface, 13)
 
-schlumi.measurement(mode='vdc')         # Vdc
-schlumi.range(range='auto')             # autorange
-schlumi.integral_period(period='0.006') # 6.66ms
-schlumi.trigger_type(trigger='single')  # single shot
-schlumi.units(False)                    # keine Einheiten
+values = np.zeros(100)              # leeres Array mit 100 Werten
+for i in range(0, len(values)):
+    schlumi.trigger()               # single shot
+    values[i] = schlumi.read()      # Wert lesen
+    time.sleep(0.1)                 # 100ms warten
 
-values = np.zeros(20)                   # leeres Array mit 20 Werten
-
-for i in range(0, 20):
-    schlumi.trigger()           # single shot
-    values[i] = schlumi.read()  # Wert lesen, dauert min. 6.66ms
-
-plt.plot(values)                # plotten
+plt.plot(values)                    # plotten
 plt.ylabel('U [V]')
 plt.xlabel('Messung Nr.')
+
 ```
 
 ##### Example 2
