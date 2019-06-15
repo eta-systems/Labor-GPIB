@@ -1,5 +1,26 @@
 # -*- coding: utf-8 -*-
 
+
+
+#%%
+schlumi = schlumberger.device(iface, 13)
+
+values = np.zeros(100)              # leeres Array mit 100 Werten
+for i in range(0, len(values)):
+    schlumi.trigger()               # single shot
+    values[i] = schlumi.read()      # Wert lesen
+    time.sleep(0.1)                 # 100ms warten
+
+plt.plot(values)                    # plotten
+plt.ylabel('U [V]')
+plt.xlabel('Messung Nr.')
+
+
+
+
+
+
+
 #%%
 iface.set_address(9)
 time.sleep(.100)

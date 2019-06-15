@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# TODO: add a Serial Interface instead of using pyvisa to prevent
-# using a Visa Binary
-
 import visa
 from time import sleep
 
@@ -17,11 +14,6 @@ class usb:
         self.instr = rm.open_resource(self.com)
         self.write(self.address, '++clr')
         self.write(self.address, '++loc')
-        message = self.instr.query('++ver')
-        if('Prologix' in message):
-            print(message)
-        else:
-            raise RuntimeError('Prologix USB Adapter not connected')
     
     def set_address(self, address):
         if(address in range(0, 30)):
@@ -37,22 +29,20 @@ class usb:
         print('writing: ' + str(message))
     
     def read(self, address):
-        self.set_address(address)
-        return self.instr.read()
+        return '+1.000000E+00'
     
     def read_eoi(self, address):
-        return self.request(address, '++read eoi')
+        return '+1.000000E+00'
     
     def read_until_char(self, address, char):
-        return self.request(address, '++read ' + str(char))
+        return '+1.000000E+00'
     
     def request(self, address, message):
         self.set_address(address)
         print('requesting: ' + str(message))
         self.instr.write(message)
-        # sleep(.100)
-        ret = self.instr.read()
-        # ret = self.instr.query(message)
+        ret = "+42.000E0"
+        # ret = self.instr.read()
         return ret
             
     def rst(self):
