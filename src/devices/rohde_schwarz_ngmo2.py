@@ -315,23 +315,6 @@ class Output:
         self.relay2 = Relay(self.bus, self.address, 2)
         self.relay3 = Relay(self.bus, self.address, 3)
         self.relay4 = Relay(self.bus, self.address, 4)
-        
-    
-    def open_sense(self, on=True):
-        self.a_open_sense = on
-        if(on == True):
-            self.bus.write(self.address, ':OUT:OPEN:ON')
-        else:
-            self.bus.write(self.address, ':OUT:OPEN:OFF')
-    
-    def band_width(self, char_val):
-        self.a_bandwidt = char_val
-        # @TODO
-    
-    # Specifies the output impedance to apply. 0 Ohms to 
-    # 1Ohms in 10 mOhm steps
-    def impedance(self, val=0.00):
-        self.a_impedance = val
     
 class Relay:
     def __init__(self, bus, addr, num=1):
@@ -342,10 +325,20 @@ class Relay:
         self.num = num
     
     def open(self):
-        self.bus.write(self.address, ':OUT:RELay:' + str(self.num) + 'OFF')
+        self.bus.write(self.address, ':OUT:REL:' + str(self.num) + 'OFF')
     
     def close(self):
-        self.bus.write(self.address, ':OUT:RELay:' + str(self.num) + 'ONE')
+        self.bus.write(self.address, ':OUT:REL:' + str(self.num) + 'ON')
+    
+    def is_open(self):
+        value = self.bus.request(self.address, ':OUT:' + self.letter + ':REL' + str(self.num) + '?')
+        if(value in ['ON', 'MAX']):
+            return False
+        elif(value in ['OFF', 'DEF', 'MIN']):
+            return True
+        else:
+            raise RuntimeError('NGMO2 returned unknown CHAR_VAL: {}'.format(value))
+        
     
 class Channel:
     def __init__(self, bus, addr, char_val=None):
@@ -364,7 +357,8 @@ class Channel:
         
     # get state
     def is_on(self):
-        val = self.bus.request(self.address, ':OUT:' + self.letter + 'STAT?')
+        value = self.bus.request(self.address, ':OUT:' + self.letter + 'STAT?')
+        return value
         
     def voltage(self, voltage=0.0):
         # 3.3 specifications (0-15V)
@@ -373,13 +367,87 @@ class Channel:
         voltage = round(voltage, 3)  # 1mV resolution
         self.bus.write(self.address, ':SOUR:' + self.letter + ':VOLT ' + str(voltage))
 
+    # TODO... what is UPPER, RANGE ??
+    def current(self, current='auto'):
+        if(type(current) in [str]):
+            current = current.lower()
+            if(current in ['auto', 'min'])
+
     # Selects Fetch, Read, Measure function type
     def sense(self, meas_type='VOLT'):
+        meas_type = meas_type.lower()
+        if(meas_type == 'volt'):
+            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:VOLT')
+        elif(meas_type in ['curr', 'amp', 'current']):
+            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:CURR')
+        elif(meas_type in ['dv', 'dvm', 'dvmeter']):
+            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:DVM')
+        elif(meas_type in ['avg', 'aver', 'average']):
+            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:AVER')
+        elif(meas_type in ['peak']):
+            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:PEAK')
+        elif(meas_type in ['min']):
+            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:MIN')
+        elif(meas_type in ['high']):
+            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:HIGH')
+        elif(meas_type in ['low']):
+            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:LOW')
+        elif(meas_type in ['rms']):
+            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:RMS')
+        else:
+            raise ValueError('Unknown sense function: {}'.format(meas_type))
         self.a_meas_typ = meas_type
     
-        
-                    
+    def get_sense(self):
+        value = self.bus.request(self.address, ':OUT:SENS:' + self.letter + ':FUNC?')
+        return value
+    
+    def open_sense(self, on=True):
+        self.a_open_sense = on
+        if(on == True):
+            self.bus.write(self.address, ':OUT:' + self.letter + ':OPEN:ON')
+        else:
+            self.bus.write(self.address, ':OUT:' + self.letter + ':OPEN:OFF')
+    
+    def band_width(self, char_val):
+        char_val = char_val.lower()
+        if(char_val in ['high', 'max', 'def', 'default']):
+            self.a_bandwidt = 'high'
+            self.bus.write(self.address, ':OUT:' + self.letter + ':BAND:HIGH')
+        elif(char_val in ['min', 'low']):
+            self.a_bandwidt = 'low'
+            self.bus.write(self.address, ':OUT:' + self.letter + ':BAND:LOW')
+        else:
+            raise ValueError('Unknown bandwidth setting: {}'.format(char_val))
             
+    def get_bandwidth(self):
+        value = self.bus.request(self.address, ':OUT:' + self.letter + ':BAND?')
+        return value
+    
+    # Specifies the output impedance to apply. 0 Ohms to 
+    # 1 Ohms in 10 mOhm steps
+    def impedance(self, val=0.00):
+        if(type(val) in [int, float]):
+            val = round(val, 2)  # 0.01 Ohm steps
+            if(0.00 <= val <= 1.00):
+                self.a_impedance = val
+                self.bus.write(self.address, ':OUT:' + self.letter + ':IMP:' + str(val))
+            else:
+                raise ValueError('Impedance must be in range 0.00 - 1.00')
+        elif(type(val) is str):
+            if(val in ['max']):
+                self.a_impedance = 1.00
+                self.bus.write(self.address, ':OUT:' + self.letter + ':IMP:MAX')
+            elif(val in ['min', 'def', 'default']):
+                self.a_impedance = 0.00
+                self.bus.write(self.address, ':OUT:' + self.letter + ':IMP:MIN')
+        else:
+            raise TypeError('Impedance must be \'str\' (min, max) or \'float\'')
+        
+        
+    def get_impedance(self):
+        value = self.bus.request(self.address, ':OUT:' + self.letter + ':BAND?')
+        return value
             
             
             

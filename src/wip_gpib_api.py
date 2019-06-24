@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 iface = dummybus.usb()
 iface.loc()  # Lokaler Modus
 
+#%%
 ngmo = ngmo2.device(iface, 7)
 ngmo.clear()
 print(ngmo.get_idn())
@@ -27,11 +28,9 @@ ngmo.display.enable(True)
 ngmo.format.data('ASCII')
 ngmo.format.border('NORMAL')
 
-ngmo_preset.lead_battery_12V(ngmo)
+ngmo_preset.HR6_12(ngmo)
 
-ngmo.output.open_sense(True)
 ngmo.output.a.sense('CURRENT')
-
 ngmo.output.a.on()
 
 
