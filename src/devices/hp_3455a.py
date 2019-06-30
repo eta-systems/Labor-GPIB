@@ -6,7 +6,7 @@ Created on Tue May 14 09:35:46 2019
 """
 
 """
-Manual: Sec III - p. 32/220 - Table 3-4. HP-IB Program Codes
+Manual: HP3455A - Sec III - p. 32/220 - Table 3-4. HP-IB Program Codes
 
 Function    DC Volts        F1
             AC Volts        F2
@@ -88,27 +88,33 @@ class device:
     def clear(self):
         self.bus.clr()
     
+    
+    
+            
     # measurement mode
     def measurement(self, mode='vdc'):
         mode = mode.lower()
-        if(mode == 'vdc'):
+        if(mode in ['vdc', 'dcv']):
             self.measurement_type = 1
             self.bus.write(self.address, 'F1')
-        elif(mode == 'vac'):
+        elif(mode in ['adc', 'acv']):
             self.measurement_type = 2
             self.bus.write(self.address, 'F2')
-        elif(mode == 'fast vac'):
+        elif(mode in ['vdcvac', 'dcvacv', 'acdc']):
             self.measurement_type = 3
             self.bus.write(self.address, 'F3')
-        elif(mode == '2 wire kr'):
+        elif(mode in ['2 wire kohms', '2 wire kr']):
             self.measurement_type = 4
             self.bus.write(self.address, 'F4')
-        elif(mode == '4 wire kr'):
+        elif(mode in ['4 wire kohms', '4 wire kr']):
             self.measurement_type = 5
             self.bus.write(self.address, 'F5')
-        elif(mode == 'test'):
+        elif(mode in ['shift', 'shift on', 'shifted']):
             self.measurement_type = 6
-            self.bus.write(self.address, 'F6')
+            self.bus.write(self.address, 'S1')
+        elif(mode in ['unshift', 'shift off', 'unshifted']):
+            self.measurement_type = 7
+            self.bus.write(self.address, 'S0')
         else:
             raise ValueError('Unknown measurement type: {}'.format(mode))
         
@@ -142,18 +148,18 @@ class device:
     # trigger type
     def trigger_mode(self, trigger='manual'):
         trigger = trigger.lower()
-        if(trigger == 'int' or trigger == 'internal' or trigger == 'T1'):
+        if(trigger in ['int', 'internal']):
             self.trigger_type = 1
             self.bus.write(self.address, 'T1')
-        elif(trigger == 'ext' or trigger == 'external' or trigger == 'T2'):
+        elif(trigger in ['ext', 'external']):
             self.trigger_type = 2
             self.bus.write(self.address, 'T2')
-        elif(trigger == 'hold' or trigger == 'manual' or trigger == 'man'):
+        elif(trigger in ['man', 'maual']):
             self.trigger_type = 3
             self.bus.write(self.address, 'T3')
         else:
             raise ValueError('invalid trigger type: {}. must be [int, ext, manual]'.format(trigger))
-        
+            
     # auto calibration
     def enable_auto_cal(self, on):
         if(on == True):

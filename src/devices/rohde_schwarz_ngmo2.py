@@ -12,6 +12,7 @@ class device:
         self.display = Display(self.bus, self.address)
         self.format = Format(self.bus, self.address, 'ASC')
         self.output = Output(self.bus, self.address)
+        self.status = Status(self.bus, self.address)
     
     # Clears all event registers and error queues
     def cls(self):
@@ -146,18 +147,7 @@ class device:
     
     # Waits until all previous commands are executed
     def wait(self):
-       self.bus.write(self.address, '*WAI')
-       
-    
-    
-    
-    
-        
-        
-        
-            
-    
-    
+       self.bus.write(self.address, '*WAI')    
     
     
     #####################################################        
@@ -371,7 +361,8 @@ class Channel:
     def current(self, current='auto'):
         if(type(current) in [str]):
             current = current.lower()
-            if(current in ['auto', 'min'])
+            if(current in ['auto', 'min']):
+                pass
 
     # Selects Fetch, Read, Measure function type
     def sense(self, meas_type='VOLT'):
@@ -450,4 +441,15 @@ class Channel:
         return value
             
             
-            
+class Status:
+    def __init__(self, bus, addr, char_val=None):
+        self.bus= bus
+        self.address = addr
+        
+    def get_measurement(self):
+        return
+        
+    
+        
+    
+    
