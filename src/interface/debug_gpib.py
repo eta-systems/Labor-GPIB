@@ -26,7 +26,7 @@ class usb:
     def write(self, address, message):
         self.set_address(address)
         self.instr.write(message) 
-        print('writing: ' + str(message))
+        print('[w|' + str(self.address) + '] : ' + str(message))
     
     def read(self, address):
         return '+1.000000E+00'
@@ -39,9 +39,10 @@ class usb:
     
     def request(self, address, message):
         self.set_address(address)
-        print('requesting: ' + str(message))
+        print('[q|' + str(self.address) + '] : ' + str(message))
         self.instr.write(message)
         ret = "+42.000E0"
+        print('[r|' + str(self.address) + '] : ' + ret)
         # ret = self.instr.read()
         return ret
             

@@ -50,7 +50,7 @@ class usb:
         self.set_address(address)
         print('requesting: ' + str(message))
         self.instr.write(message)
-        # sleep(.100)
+        self.instr.write('++read 10')
         ret = self.instr.read()
         # ret = self.instr.query(message)
         return ret

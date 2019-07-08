@@ -5,15 +5,21 @@ Created on Sun May 12 21:05:35 2019
 @author: simon
 """
 
+from decimal import Decimal  # for scientific 2.00E-3 notation
+
 class device:
     def __init__(self, iface=None, address=7):
         self.bus = iface
         self.address = address
         self.display = Display(self.bus, self.address)
         self.format = Format(self.bus, self.address, 'ASC')
-        self.output = Output(self.bus, self.address)
+        # self.output = Output(self.bus, self.address)
+        
+        self.channel_a = Channel(self.bus, self.address, 'A')
+        self.channel_b = Channel(self.bus, self.address, 'B')
+        
         self.status = Status(self.bus, self.address)
-    
+
     # Clears all event registers and error queues
     def cls(self):
         self.bus.write(self.address, '*CLS')
@@ -149,8 +155,29 @@ class device:
     def wait(self):
        self.bus.write(self.address, '*WAI')    
     
+    def channel(self, char_val='A'):
+        return self.output(char_val)
     
-    #####################################################        
+    def output(self, char_val='A'):
+    	if(char_val in ['a', 'A', '1', 1]):
+    		return self.channel_a
+    	elif(char_val in ['b', 'B', '2', 2]):
+    		return self.channel_b
+    	else:
+    		raise ValueError('Channel not in range [1,2] / [A,B]')
+            
+    def relay(self, val=None):
+        if(val in [1, '1']):
+            return self.relay1
+        elif(val in [2, '2']):
+            return self.relay2
+        elif(val in [3, '3']):
+            return self.relay3
+        elif(val in [4, '4']):
+            return self.relay4
+        else:
+            raise ValueError('Relay not in range [1,2,3,4]')
+               
     def get_idn(self):
         value = self.bus.request(self.address, '*IDN?')
         # ROHDE&SCHWARZ,NGMO2,100778,1.16 /A:3:1.14,B:3:1.14
@@ -201,9 +228,6 @@ class device:
         elif(order == 'swapped' or order == 'lsbfirst'):
             self.bus.write(self.address, ':FORMat:BORDer SWAPped')
 
-
-
-
 # Inner Class for some easier Syntax
 class Display:
     def __init__(self, bus, addr):
@@ -215,10 +239,10 @@ class Display:
     def enable(self, on=True):
         if(on == True):
             self.display = True
-            self.bus.write(self.address, ':DISP:ENAB:ON')
+            self.bus.write(self.address, ':DISP:ENAB ON')
         else:
             self.display = False
-            self.bus.write(self.address, ':DISP:ENAB:OFF')
+            self.bus.write(self.address, ':DISP:ENAB OFF')
         
     # Queries status of display
     def enabled(self):
@@ -247,11 +271,35 @@ class Display:
             cmd = 'DEF'
         else:
             raise ValueError('Unknown channel setting: {}'.format(channel))
+        # TODO, send cmd
         
-    
     def selected_channel(self):
         val = self.bus.request(self.address, ':DISP:CHAN?')
         return val
+    
+    def view(self, mode=''):
+        mode= mode.lower()
+        # iface.write(7, ':OUTP:A:STAT DISP')
+        # iface.write(7, ':OUTP:B:IMP DISP')
+        # iface.write(7, ':OUTP:B:BAND DISP')
+        # iface.write(7, ':OUTP:A:REL3 DISP')
+        # TODO !!! THERE ARE ONLY RELAYS on CHANNEL A
+        # iface.write(7, ':SENS:A:CURR:DC:RANG:UPP DISP')
+        # iface.write(7, ':SENS:A:MEAS:INT DISP')
+        # iface.write(7, ':SENS:A:PULS:MEAS:CHAN DISP')
+        # iface.write(7, ':SENS:A:PULS:MEAS:STAR DISP')
+        # iface.write(7, ':SENS:A:PULS:MEAS:TYPE DISP')
+        # iface.write(7, ':SENS:A:PULS:TRIG:LEV:HIGH DISP')
+        # iface.write(7, ':SENS:A:PULS:TRIG:LEV:LOW DISP')
+        # iface.write(7, ':SENS:A:PULS:TRIG:LEV:DVM DISP')
+        # iface.write(7, ':SENS:A:PULS:TRIG:SOUR DISP')
+        # iface.write(7, ':SENS:A:PULS:SAMP:LENG DISP')
+        # iface.write(7, ':SENS:A:PULS:TRIG:OFFSet DISP')
+        # iface.write(7, ':SENS:A:PULS:TRIG:COUN DISP')
+        # iface.write(7, ':SENS:A:PULS:TRIG:TIM DISP')
+        # ...
+    
+        
     
 class Format:
     def __init__(self, bus, addr, char_val):
@@ -275,7 +323,7 @@ class Format:
         else:
             raise ValueError('Unknown data format: {}'.format(char_val))
         self.a_data = char_val
-        self.bus.write(self.address, ':FORM:DATA:' + str(cmd))
+        self.bus.write(self.address, ':FORM:DATA ' + str(cmd))
     
     def get_data(self):
         val = self.bus.request(self.address, ':FORM:DATA?')
@@ -291,37 +339,26 @@ class Format:
         else:
             raise ValueError('Unknown border format: {}'.format(char_val))
         self.a_border = char_val
-        self.bus.write(self.address, ':FORM:BORD:' + str(cmd))
-        
-class Output:
-    def __init__(self, bus, addr, char_val=None):
-        self.bus= bus
-        self.address = addr
-        
-        self.a = Channel(self.bus, self.address, 'A')
-        self.b = Channel(self.bus, self.address, 'B')
-        
-        self.relay1 = Relay(self.bus, self.address, 1)
-        self.relay2 = Relay(self.bus, self.address, 2)
-        self.relay3 = Relay(self.bus, self.address, 3)
-        self.relay4 = Relay(self.bus, self.address, 4)
+        self.bus.write(self.address, ':FORM:BORD ' + str(cmd))
     
 class Relay:
-    def __init__(self, bus, addr, num=1):
+    def __init__(self, bus, addr, letter, num=1):
         self.bus= bus
         self.address = addr
         if(num not in range(1,5)):
             raise ValueError('Relay not in range 1-4: {}'.format(num))
         self.num = num
+        self.letter = letter
     
     def open(self):
-        self.bus.write(self.address, ':OUT:REL:' + str(self.num) + 'OFF')
+        self.bus.write(self.address, ':OUTP:REL ' + str(self.num) + 'OFF')
     
     def close(self):
-        self.bus.write(self.address, ':OUT:REL:' + str(self.num) + 'ON')
+        self.bus.write(self.address, ':OUTP:REL ' + str(self.num) + 'ON')
     
     def is_open(self):
-        value = self.bus.request(self.address, ':OUT:' + self.letter + ':REL' + str(self.num) + '?')
+        value = self.bus.request(self.address, ':OUTP:' + self.letter + ':REL' + str(self.num) + '?')
+        value = value.strip()  # remove /n
         if(value in ['ON', 'MAX']):
             return False
         elif(value in ['OFF', 'DEF', 'MIN']):
@@ -338,16 +375,21 @@ class Channel:
         if(char_val not in 'ABab' or len(char_val) != 1):
             raise ValueError('Channel can only be "A" or "B". channel = {}'.format(char_val))
         self.letter = char_val.upper()
+        
+        self.relay1 = Relay(self.bus, self.address, self.letter, 1)
+        self.relay2 = Relay(self.bus, self.address, self.letter, 2)
+        self.relay3 = Relay(self.bus, self.address, self.letter, 3)
+        self.relay4 = Relay(self.bus, self.address, self.letter, 4)
     
     def on(self):
-        self.bus.write(self.address, ':OUT:' + self.letter + ':ON')
+        self.bus.write(self.address, ':OUT:' + self.letter + ' ON')
     
     def off(self):
-        self.bus.write(self.address, ':OUT:' + self.letter + ':OFF')
+        self.bus.write(self.address, ':OUT:' + self.letter + ' OFF')
         
     # get state
     def is_on(self):
-        value = self.bus.request(self.address, ':OUT:' + self.letter + 'STAT?')
+        value = self.bus.request(self.address, ':OUTP:' + self.letter + 'STAT?')
         return value
         
     def voltage(self, voltage=0.0):
@@ -368,23 +410,23 @@ class Channel:
     def sense(self, meas_type='VOLT'):
         meas_type = meas_type.lower()
         if(meas_type == 'volt'):
-            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:VOLT')
+            self.bus.write(self.address, ':OUTP:SENS:' + self.letter + ':FUNC:VOLT')
         elif(meas_type in ['curr', 'amp', 'current']):
-            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:CURR')
+            self.bus.write(self.address, ':OUTP:SENS:' + self.letter + ':FUNC:CURR')
         elif(meas_type in ['dv', 'dvm', 'dvmeter']):
-            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:DVM')
+            self.bus.write(self.address, ':OUTP:SENS:' + self.letter + ':FUNC:DVM')
         elif(meas_type in ['avg', 'aver', 'average']):
-            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:AVER')
+            self.bus.write(self.address, ':OUTP:SENS:' + self.letter + ':FUNC:AVER')
         elif(meas_type in ['peak']):
-            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:PEAK')
+            self.bus.write(self.address, ':OUTP:SENS:' + self.letter + ':FUNC:PEAK')
         elif(meas_type in ['min']):
-            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:MIN')
+            self.bus.write(self.address, ':OUTP:SENS:' + self.letter + ':FUNC:MIN')
         elif(meas_type in ['high']):
-            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:HIGH')
+            self.bus.write(self.address, ':OUTP:SENS:' + self.letter + ':FUNC:HIGH')
         elif(meas_type in ['low']):
-            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:LOW')
+            self.bus.write(self.address, ':OUTP:SENS:' + self.letter + ':FUNC:LOW')
         elif(meas_type in ['rms']):
-            self.bus.write(self.address, ':OUT:SENS:' + self.letter + ':FUNC:RMS')
+            self.bus.write(self.address, ':OUTP:SENS:' + self.letter + ':FUNC:RMS')
         else:
             raise ValueError('Unknown sense function: {}'.format(meas_type))
         self.a_meas_typ = meas_type
@@ -393,26 +435,85 @@ class Channel:
         value = self.bus.request(self.address, ':OUT:SENS:' + self.letter + ':FUNC?')
         return value
     
+    # Selects expected current measurement range
+    def current_range(self, char_val):
+        char_val = str(char_val.lower())
+        if(char_val in ['auto', 'min']):
+            self.bus.write(self.address, ':SENS:' + self.letter + ':CURR:RANG:UPP:AUTO')
+        elif(char_val in ['high', 'hi', '5', '5a', 'def', 'default']):
+            self.bus.write(self.address, ':SENS:' + self.letter + ':CURR:RANG:UPP:HIGH')
+        elif(char_val in ['medium', 'med', '0.5', '0.5a', '500mA']):
+            self.bus.write(self.address, ':SENS:' + self.letter + ':CURR:RANG:UPP:MED')
+        elif(char_val in ['max', 'low', '0.005', '0.005a', '5ma']):
+            self.bus.write(self.address, ':SENS:' + self.letter + ':CURR:RANG:UPP:MIN')
+    
+    # Queries current range
+    def get_current_range(self):
+        value = self.bus.request(self.address, ':SENS:' + self.letter + ':CURR:DC:RANG:UPP?')
+        return value
+    
+    # Sets the measurement interval for voltage and current
+    def interval(self, val):
+        self.measure_interval(val)
+        
+    def measure_interval(self, val):
+        if(type(val) is str):
+            flt_val = float(val)  #  float() supports scientific notation
+        elif(type(val) is float):
+            flt_val = val
+        else:
+            raise TypeError('Value of type: {} not implemented'.format(type(val)))
+        
+        # sample interval can be set between 10 µs and 1 s in 10 µs steps
+        if not (0.00001 <= flt_val <= 1.0):
+            raise ValueError('sample interval can be set between 10 µs and 1 s in 10 µs steps')
+        flt_val = round(flt_val, 5)  # 10 µs steps
+        # https://stackoverflow.com/questions/6913532/display-a-decimal-in-scientific-notation
+        str_val = '%.2E' % Decimal(flt_val) # convert to Decimal notation
+        self.bus.write(self.address, ':SENS:' + self.letter + ':MEAS:INT:' + str_val)
+    
+    # Queries measurement interval
+    def get_interval(self):
+        value = self.bus.request(self.address, ':SENS:' + self.letter + ':MEAS:INT?')
+        # returns: 2E-3 <= NUM_VAL <= 0.2
+        return float(value)
+    
+    # Sets the measure average count
+    # TODO: better method name?
+    def set_averaging_samples(self, val):
+        if(val in ['min', 'def', 'default']):
+            int_val = 1
+        elif(val in ['max']):
+            int_val = 10
+        else:
+            int_val = int(val)
+        if not (1 <= val <= 10):
+            raise ValueError('Measure average count out of range 1 - 10')
+        self.bus.write(self.address, ':SENS:' + self.letter + ':AVER:COUN:' + str(int_val))
+        
+    # Queries current trigger status
+    # def 
+    
     def open_sense(self, on=True):
         self.a_open_sense = on
         if(on == True):
-            self.bus.write(self.address, ':OUT:' + self.letter + ':OPEN:ON')
+            self.bus.write(self.address, ':OUTP:' + self.letter + ':OPEN:ON')
         else:
-            self.bus.write(self.address, ':OUT:' + self.letter + ':OPEN:OFF')
-    
+            self.bus.write(self.address, ':OUTP:' + self.letter + ':OPEN:OFF')
+            
     def band_width(self, char_val):
         char_val = char_val.lower()
         if(char_val in ['high', 'max', 'def', 'default']):
             self.a_bandwidt = 'high'
-            self.bus.write(self.address, ':OUT:' + self.letter + ':BAND:HIGH')
+            self.bus.write(self.address, ':OUTP:' + self.letter + ':BAND:HIGH')
         elif(char_val in ['min', 'low']):
             self.a_bandwidt = 'low'
-            self.bus.write(self.address, ':OUT:' + self.letter + ':BAND:LOW')
+            self.bus.write(self.address, ':OUTP:' + self.letter + ':BAND:LOW')
         else:
             raise ValueError('Unknown bandwidth setting: {}'.format(char_val))
             
     def get_bandwidth(self):
-        value = self.bus.request(self.address, ':OUT:' + self.letter + ':BAND?')
+        value = self.bus.request(self.address, ':OUTP:' + self.letter + ':BAND?')
         return value
     
     # Specifies the output impedance to apply. 0 Ohms to 
@@ -422,34 +523,37 @@ class Channel:
             val = round(val, 2)  # 0.01 Ohm steps
             if(0.00 <= val <= 1.00):
                 self.a_impedance = val
-                self.bus.write(self.address, ':OUT:' + self.letter + ':IMP:' + str(val))
+                self.bus.write(self.address, ':OUTP:' + self.letter + ':IMP:' + str(val))
             else:
                 raise ValueError('Impedance must be in range 0.00 - 1.00')
         elif(type(val) is str):
             if(val in ['max']):
                 self.a_impedance = 1.00
-                self.bus.write(self.address, ':OUT:' + self.letter + ':IMP:MAX')
+                self.bus.write(self.address, ':OUTP:' + self.letter + ':IMP:MAX')
             elif(val in ['min', 'def', 'default']):
                 self.a_impedance = 0.00
-                self.bus.write(self.address, ':OUT:' + self.letter + ':IMP:MIN')
+                self.bus.write(self.address, ':OUTP:' + self.letter + ':IMP:MIN')
         else:
             raise TypeError('Impedance must be \'str\' (min, max) or \'float\'')
         
-        
     def get_impedance(self):
-        value = self.bus.request(self.address, ':OUT:' + self.letter + ':BAND?')
+        value = self.bus.request(self.address, ':OUTP:' + self.letter + ':BAND?')
         return value
-            
+    
+    def relay(self, val=1):
+        if(val in [1, '1']):
+            return self.relay1
+        elif(val in [2, '2']):
+            return self.relay2
+        elif(val in [3, '3']):
+            return self.relay3
+        elif(val in [4, '4']):
+            return self.relay4
+        else:
+            raise ValueError('Relay number not in range [1-4]')
             
 class Status:
     def __init__(self, bus, addr, char_val=None):
         self.bus= bus
         self.address = addr
         
-    def get_measurement(self):
-        return
-        
-    
-        
-    
-    
