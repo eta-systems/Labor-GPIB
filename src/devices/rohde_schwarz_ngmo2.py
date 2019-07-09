@@ -3,6 +3,12 @@
 Created on Sun May 12 21:05:35 2019
 
 @author: simon
+
+Copyright (c) 2019 eta systems GmbH. All rights reserved.
+
+This Software is distributed WITHOUT ANY WARRANTY; 
+without even the implied warranty of MERCHANTABILITY 
+or FITNESS FOR A PARTICULAR PURPOSE. 
 """
 
 from decimal import Decimal  # for scientific 2.00E-3 notation

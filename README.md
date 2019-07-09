@@ -14,6 +14,13 @@ The goal of this project is, to enable easy scripting of measurement procedures 
 
 ---
 
+## Results
+
+![results/Efficiency_vs_LoadCurrent.png](results/Efficiency_vs_LoadCurrent.png)
+
+Efficiency curve of a 12V to 5V DC/DC converter. Measured using the NGMO2.
+
+---
 
 ### Example
 
