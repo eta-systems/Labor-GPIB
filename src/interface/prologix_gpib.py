@@ -5,6 +5,7 @@
 
 import visa
 from time import sleep
+from sys import stderr
 
 class usb:
     def __init__(self, com='ASRL1::INSTR', baudrate=19200, timeout=2000):
@@ -41,17 +42,24 @@ class usb:
         return self.instr.read()
     
     def read_eoi(self, address):
+        print('Read EOI - Not Implemented')
         return self.request(address, '++read eoi')
     
+    # TODO: address arg is not required
     def read_until_char(self, address, char):
-        return self.request(address, '++read ' + str(char))
+        self.instr.write('++read ' + str(char))
+        return self.instr.read()
     
     def request(self, address, message):
         self.set_address(address)
         print('requesting: ' + str(message))
         self.instr.write(message)
         self.instr.write('++read 10')
-        ret = self.instr.read()
+        try:
+            ret = self.instr.read()
+        except visa.VisaIOError as e:
+            stderr.write('Exception: ' + str(e.description))
+            ret = ''
         # ret = self.instr.query(message)
         return ret
             

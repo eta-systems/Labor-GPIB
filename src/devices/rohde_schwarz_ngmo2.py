@@ -74,6 +74,7 @@ class device:
     # Returns the power supply to the *RST default conditions
     def rst(self):
         self.bus.write(self.address, '*RST')
+        self.cls()
     
     def reset(self):
         self.rst()

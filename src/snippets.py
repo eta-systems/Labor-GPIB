@@ -109,4 +109,3 @@ plt.xlabel('Messung Nr.')
 
 
 
-
