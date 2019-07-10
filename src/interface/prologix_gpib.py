@@ -1,18 +1,25 @@
 # -*- coding: utf-8 -*-
+"""
+@author: simon
 
-# TODO: add a Serial Interface instead of using pyvisa to prevent
-# using a Visa Binary
+Copyright (c) 2019 eta systems GmbH. All rights reserved.
+
+This Software is distributed WITHOUT ANY WARRANTY; 
+without even the implied warranty of MERCHANTABILITY 
+or FITNESS FOR A PARTICULAR PURPOSE. 
+"""
 
 import visa
 from time import sleep
 from sys import stderr
 
 class usb:
-    def __init__(self, com='ASRL1::INSTR', baudrate=19200, timeout=2000):
+    def __init__(self, com='ASRL1::INSTR', baudrate=19200, timeout=2000, log_level=0):
         self.com = com
         self.baudrate = baudrate
         self.timeout = timeout
         self.address = 1
+        self.log_level = int(log_level)  # 0=off, 1=log
         rm = visa.ResourceManager()
         rm.list_resources()
         self.instr = rm.open_resource(self.com)
@@ -28,38 +35,62 @@ class usb:
         if(address in range(0, 30)):
             if(address != self.address):
                 self.address = address
+                if(self.log_level>0):
+                    print('[w|-] ++addr ' + str(self.address))
                 self.instr.write('++addr ' + str(self.address))
         else:
             raise ValueError('GPIB address {} not in range 0-30 (integer)'.format(address))
         
     def write(self, address, message):
         self.set_address(address)
+        if(self.log_level>0):
+            print('[w|' + str(self.address) + '] ' + str(message))
         self.instr.write(message) 
-        print('writing: ' + str(message))
     
     def read(self, address):
         self.set_address(address)
-        return self.instr.read()
+        if(self.log_level>0):
+            print('[r|' + str(self.address) + '] ', end = '') # end -> no \n
+        val = self.instr.read()
+        print(val)
+        return val
     
+    # Untested
     def read_eoi(self, address):
-        print('Read EOI - Not Implemented')
-        return self.request(address, '++read eoi')
+        self.set_address(address)
+        if(self.log_level>0):
+            print('[w|-] ++read eoi')
+        self.instr.write('++read eoi')
+        if(self.log_level>0):
+            print('[r|' + str(self.address) + '] ', end = '') # end -> no \n
+        val = self.instr.read()
+        print(val)
+        return val
     
-    # TODO: address arg is not required
     def read_until_char(self, address, char):
+        self.set_address(address)
+        if(self.log_level>0):
+            print('[w|-] ++read ' + str(char))
         self.instr.write('++read ' + str(char))
-        return self.instr.read()
+        if(self.log_level>0):
+            print('[r|' + str(self.address) + '] ', end = '') # end -> no \n
+        val = self.instr.read()
+        print(val)
+        return val
     
     def request(self, address, message):
         self.set_address(address)
-        print('requesting: ' + str(message))
+        if(self.log_level>0):
+            print('[q|' + str(self.address) + '] ' + str(message), end='')
         self.instr.write(message)
         self.instr.write('++read 10')
         try:
             ret = self.instr.read()
         except visa.VisaIOError as e:
-            stderr.write('Exception: ' + str(e.description))
+            print('\n[-|-] Exception: ' + str(e.description))
             ret = ''
+        else:
+            print(ret) # when no exception occurrs
         # ret = self.instr.query(message)
         return ret
             
