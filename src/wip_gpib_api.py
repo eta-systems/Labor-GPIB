@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 
 #%%
 iface = prologix.usb(com='ASRL31::INSTR', baudrate=19200, timeout=5000)
-# iface = dummybus.usb()exit()
+# iface = dummybus.usb()
 iface.loc()  # Lokaler Modus
 
 ngmo = ngmo2.device(iface, 7)

@@ -7,6 +7,7 @@ Created on Tue Jul  9 10:51:30 2019
 
 import time
 import interface.prologix_gpib as prologix
+import interface.debug_gpib as dummybus
 
 import devices.rohde_schwarz_ngmo2 as ngmo2
 
@@ -14,8 +15,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 #%%
-iface = prologix.usb(com='ASRL31::INSTR', baudrate=19200, timeout=5000)
-iface.loc()  # local mode
+# iface = prologix.usb(com='ASRL31::INSTR', baudrate=19200, timeout=5000)
+#iface.loc()  # local mode
+iface = dummybus.usb()
 ngmo = ngmo2.device(iface, 7)
 
 ngmo.clear()
@@ -38,17 +40,17 @@ LOAD_CURRENT_MIN = 1.0
 DELTA_LOAD_CURRENT = LOAD_CURRENT_MAX - LOAD_CURRENT_MIN
 DPOINTS = 100
 
-iface.write(7, ':SOUR:A:VOLT ' + str(SOURCE_CONST_VOLT))         # 13V input into DCDC
-iface.write(7, ':SOUR:A:CURR:LIM 1.5')      # current limmit = 1.5A
-iface.write(7, ':SENS:A:FUNC CURR')         # measurement mode = current
-iface.write(7, ':SENS:A:MEAS:INT 1.00E-4')  # measurement interval = 2ms
-iface.write(7, ':SENS:A:MEAS:AVER:COUN 10')  # averaging uses 1 sample
+srce.voltage(SOURCE_CONST_VOLT)
+srce.current(1.5)
+srce.sense('current')
+#srce.interval(1.00E-4)
+#srce.set_averaging_samples(10)
 
-iface.write(7, ':SOUR:B:VOLT 0.0')          # 0V output of DCDC
-iface.write(7, ':SOUR:B:CURR:LIM ' + str(LOAD_CURRENT_MIN))      # current limmit = 0.1A
-iface.write(7, ':SENS:B:FUNC CURR')         # measurement mode = current
-iface.write(7, ':SENS:B:MEAS:INT 1.00E-4')  # measurement interval = 2ms
-iface.write(7, ':SENS:B:MEAS:AVER:COUN 10')  # averaging uses 1 sample
+load.voltage(0.0)
+load.current(LOAD_CURRENT_MIN)
+load.sense('current')
+#srce.interval(1.00E-4)
+#srce.set_averaging_samples(10)
 
 val = {}
 val['source'] = {}
@@ -62,7 +64,6 @@ val['load']['power'] = np.zeros(DPOINTS)
 
 srce.on()
 load.on()
-
    
 iface.write(7, ':SENS:A:FUNC CURR')
 iface.write(7, ':MEAS:A?')
@@ -70,7 +71,7 @@ time.sleep(.1)
 r = iface.read_until_char(7, '10')
 print(r)
 
-
+#%%
 # read source voltage
 iface.write(7, ':SENS:A:FUNC VOLT')
 iface.write(7, ':MEAS:A?')
@@ -78,6 +79,11 @@ time.sleep(.01)
 r = iface.read_until_char(7, '10')
 print(r)
 
+r = srce.read_voltage()
+print(r)
+
+
+#%%
 time.sleep(1)
 # read source voltage
 iface.write(7, ':SENS:B:FUNC VOLT')
