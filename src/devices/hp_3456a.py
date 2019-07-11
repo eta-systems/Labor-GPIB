@@ -108,6 +108,22 @@ PROGRAM MEMORY
 
 """
 
+"""
+
+S0F1R1Z1M0T4SM024
+
+
+S0      Shift Function Off (Unshifted)
+F1      DCV / DCV Ratio 
+R1      Auto Range
+Z1      Autozero On
+M0      Math Off
+T4      Trigger Hold
+SM024   ??
+
+
+"""
+
 from time import sleep
 from warnings import warn
 
@@ -119,11 +135,11 @@ class device:
         self.clear()
         self.measurement('vdc')
         self.range('auto')
-        self.trigger_mode('manual')
-        self.math_mode('Off')
-        self.enable_high_resolution(False)
-        self.enable_auto_cal(False)
-        self.enable_rqs(True)
+        self.trigger_mode('hold')
+        # self.math_mode('Off')
+        # self.enable_high_resolution(False)
+        # self.enable_auto_cal(False)
+        # self.enable_rqs(True)
     
     # clear
     def clear(self):

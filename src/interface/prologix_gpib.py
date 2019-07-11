@@ -95,6 +95,8 @@ class usb:
         return ret
             
     def rst(self):
+        if(self.log_level>0):
+            print('[w|-] ++rst')
         self.write(self.address, 'rst')
         sleep(5.0)
         
@@ -107,11 +109,21 @@ class usb:
     def reset(self):
         self.write(self.address, '++rst')
     
+    # TODO
+    # spoll = 65/68 is not received from hp345x devices
     def spoll(self):
-       return  self.request(self.address, '++spoll')
+        if(self.log_level>0):
+            print('[w|-] ++spoll', end='')
+        val = self.instr.query('++spoll')
+        #val = self.instr.read()
+        print(' [r|-] ' + str(val), end='')
+        return val
     
     def loc(self):
         self.write(self.address, '++loc')
+        
+    def close(self):
+        self.instr.close()
             
 ##############################################################################
 # # Commands for the PROLOGIX GPIO-USB converter 

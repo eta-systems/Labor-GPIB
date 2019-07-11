@@ -87,9 +87,6 @@ class device:
     # clear
     def clear(self):
         self.bus.clr()
-    
-    
-    
             
     # measurement mode
     def measurement(self, mode='vdc'):
@@ -154,7 +151,7 @@ class device:
         elif(trigger in ['ext', 'external']):
             self.trigger_type = 2
             self.bus.write(self.address, 'T2')
-        elif(trigger in ['man', 'maual']):
+        elif(trigger in ['man', 'manual']):
             self.trigger_type = 3
             self.bus.write(self.address, 'T3')
         else:
@@ -235,8 +232,7 @@ class device:
             self.bus.write(self.address, 'D0')
     
     def poll(self):    
-        self.bus.spoll()
-        val = self.bus.read()
+        val = self.bus.spoll()
         if(val == '65'):
             return True
         else:
@@ -249,5 +245,29 @@ class device:
                 return self.read()
         warn('Serial poll did not return an SRQ message')
         return '0.0'
+    
+    # TODO, check if mode is voltage
+    # ++spoll
+    # 65
+    # ++read 10
+    # +1.385460E-01
+    def read_voltage(self):
+        #if(self.poll() == '65'):
+        #    val = self.read()
+        #    return val
+        self.trigger()
+        self.poll()
+        val = self.read()
+        return val
         
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
