@@ -14,21 +14,10 @@ dvm = hp3456.device(iface, 8)  # address 8 on prologix interface
 
 iface.write(8, 'S0F1R1Z1M0T4SM024')
 
-iface.write(8, '++trg')
-iface.write(8, '++spoll')
-val = iface.read(8)
-print(' [r|-] ' + str(val), end='')
-
-iface.write(8, '++read 10')
-val = iface.read(8)
-print(' [r|-] ' + str(val), end='')
-
-"""
 for k in range(0,20):
     iface.trg()
     print('spoll: ' + str(iface.spoll()))
     print('volt: ' + str(float(iface.read_until_char(8, '10'))))
-"""
 
 iface.close()
 

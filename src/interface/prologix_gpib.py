@@ -52,7 +52,7 @@ class usb:
         if(self.log_level>0):
             print('[r|' + str(self.address) + '] ', end = '') # end -> no \n
         val = self.instr.read()
-        print(val)
+        print(val, end='')
         return val
     
     # Untested
