@@ -1,4 +1,17 @@
 # -*- coding: utf-8 -*-
+"""
+
+Not yet ready for prod
+Example for how to write scripts for prod
+
+@author: simon
+
+Copyright (c) 2019 eta systems GmbH. All rights reserved.
+
+This Software is distributed WITHOUT ANY WARRANTY; 
+without even the implied warranty of MERCHANTABILITY 
+or FITNESS FOR A PARTICULAR PURPOSE. 
+"""
 
 #%%
 
