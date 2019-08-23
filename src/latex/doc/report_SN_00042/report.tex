@@ -67,11 +67,11 @@
 
 \begin{center}
 	\begin{tabular}{l r}
-		Serial Number & REPLACE-SERIAL-NUMBER \\
-		PCB Version & REPLACE-PCB-VERSION \\
+		Serial Number & SN_00042 \\
+		PCB Version & 128_2.505.101.01_SG midi Main \\
 		Date of Test: & \today \\
-		Operator & REPLACE-OPERATOR \\
-		Script Version: & REPLACE-SCRIPT-VERSION \\
+		Operator & BSI \\
+		Script Version: & nightly \\
 	\end{tabular}
 \end{center}
 
@@ -83,7 +83,7 @@
 
 \section{Test Procedure}
 
-Testing with a voltage of ${REPLACE-VOLTAGE-INPUT \si{V}}$.
+Testing with a voltage of ${12.3 \si{V}}$.
 
 
 % may look too wide with placeholder values
@@ -93,9 +93,9 @@ Testing with a voltage of ${REPLACE-VOLTAGE-INPUT \si{V}}$.
 		\begin{tabular}{|l|l|l|l|l|l|}
 			\hline
 			\textbf{Symbol} & \textbf{Ratings}             & \textbf{min}                & \textbf{typ}              & \textbf{max}                & \textbf{Unit} \\ \hline
-			${V_{in}}$      & Input Voltage                &                             & ${REPLACE-VOLTAGE-INPUT}$ &                             & ${\si{V}}$    \\ \hline
-			${I_{out}}$     & Output Current               & ${REPLACE-CURRENT-OUT-MIN}$ &                           & ${REPLACE-CURRENT-OUT-MAX}$ & ${\si{A}}$    \\ \hline
-			n               & Number of measurement points &                             & ${REPLACE-DPOINTS}$       &                             &               \\ \hline
+			${V_{in}}$      & Input Voltage                &                             & ${12.3}$ &                             & ${\si{V}}$    \\ \hline
+			${I_{out}}$     & Output Current               & ${0.1}$ &                           & ${2.0}$ & ${\si{A}}$    \\ \hline
+			n               & Number of measurement points &                             & ${100}$       &                             &               \\ \hline
 		\end{tabular}
 	\end{table}
 \end{center}
