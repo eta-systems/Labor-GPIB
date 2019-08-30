@@ -49,7 +49,7 @@ DELAY_MEAS_TRIG = 0.005
 NGMO_ADDR = 7
 
 #%%
-iface = prologix.usb(com='ASRL31::INSTR', baudrate=19200, timeout=5000)
+iface = prologix.usb(com='ASRLCOM31::INSTR', baudrate=19200, timeout=5000)
 iface.loc()  # local mode
 ngmo = ngmo2.device(iface, NGMO_ADDR)
 
@@ -59,7 +59,7 @@ time.sleep(.100)
 print(ngmo.get_idn())
 time.sleep(.100)
 
-ngmo.display.enable(False)  # high speed mode
+#ngmo.display.enable(False)  # high speed mode
 ngmo.format.data('ASCII')
 
 srce = ngmo.output('A')
