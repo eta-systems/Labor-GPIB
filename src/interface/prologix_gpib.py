@@ -23,6 +23,7 @@ class usb:
         rm = visa.ResourceManager()
         rm.list_resources()
         self.instr = rm.open_resource(self.com)
+        self.instr.timeout = self.timeout
         self.write(self.address, '++clr')
         self.write(self.address, '++loc')
         message = self.instr.query('++ver')
@@ -52,7 +53,8 @@ class usb:
         if(self.log_level>0):
             print('[r|' + str(self.address) + '] ', end = '') # end -> no \n
         val = self.instr.read()
-        print(val, end='')
+        if(self.log_level>0):
+            print(val, end='')
         return val
     
     # Untested

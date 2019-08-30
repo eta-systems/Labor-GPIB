@@ -9,7 +9,7 @@ Created on Fri Aug 30 08:42:25 2019
 import json
 import numpy as np
 
-datloc = '../results/values_86percent_efficiency.json'
+datloc = '../results/values_SGmini_5V_USB.json'
 with open(datloc) as fil:
     prev_data = json.load(fil)
 

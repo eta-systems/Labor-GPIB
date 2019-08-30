@@ -87,6 +87,7 @@ class device:
     # clear
     def clear(self):
         self.bus.clr()
+        sleep(1)
             
     # measurement mode
     def measurement(self, mode='vdc'):
@@ -94,7 +95,7 @@ class device:
         if(mode in ['vdc', 'dcv']):
             self.measurement_type = 1
             self.bus.write(self.address, 'F1')
-        elif(mode in ['adc', 'acv']):
+        elif(mode in ['adc', 'acv', 'vac']):
             self.measurement_type = 2
             self.bus.write(self.address, 'F2')
         elif(mode in ['vdcvac', 'dcvacv', 'acdc']):
@@ -257,7 +258,7 @@ class device:
         #    return val
         self.trigger()
         self.poll()
-        val = self.read()
+        val = self.bus.read_until_char(self.address, '10')  # ASCII 10 = LF
         return val
         
         
