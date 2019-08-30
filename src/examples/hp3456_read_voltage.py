@@ -7,18 +7,18 @@ import devices.hp_3456a as hp3456
 import numpy as np
 import matplotlib.pyplot as plt
 
-iface = prologix.usb(com='ASRL31::INSTR', baudrate=19200, timeout=5000, log_level=1)
-iface.loc()  # Lokaler Modus
+iface = prologix.usb(com='ASRLCOM31::INSTR', baudrate=19200, timeout=5000, log_level=1)
 
 dvm = hp3456.device(iface, 8)  # address 8 on prologix interface
+dvm.measurement('vac')
+dvm.trigger_mode('hold')
 
-iface.write(8, 'S0F1R1Z1M0T4SM024')
-
-for k in range(0,20):
-    iface.trg()
-    print('spoll: ' + str(iface.spoll()))
-    print('volt: ' + str(float(iface.read_until_char(8, '10'))))
-
+for k in range(0,3):
+    dvm.measurement('vdc')
+    print('DC: ' + str(dvm.read_voltage()))
+    dvm.measurement('vac')
+    print('AC: ' + str(dvm.read_voltage()))
+    
 iface.close()
 
 

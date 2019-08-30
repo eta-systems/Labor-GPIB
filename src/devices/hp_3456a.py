@@ -112,7 +112,6 @@ PROGRAM MEMORY
 
 S0F1R1Z1M0T4SM024
 
-
 S0      Shift Function Off (Unshifted)
 F1      DCV / DCV Ratio 
 R1      Auto Range
@@ -218,7 +217,7 @@ class device:
             self.trigger_type = 4
             self.bus.write(self.address, 'T4')
         else:
-            raise ValueError('invalid trigger type: {}. must be [int, ext, manual]'.format(trigger))
+            raise ValueError('invalid trigger type: {}. must be [int, ext, single]'.format(trigger))
         
     # autozero
     def enable_autozero(self, enable=True):
@@ -247,7 +246,11 @@ class device:
             self.test = False
             self.bus.write(self.address, 'TE0')
 
-
+    def read_voltage(self):
+        self.bus.trg()
+        self.bus.spoll()
+        val = self.bus.read_until_char(self.address, '10')
+        return val
         
         
         

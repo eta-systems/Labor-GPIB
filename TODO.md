@@ -17,3 +17,10 @@
 ### Small Todos
 
 - add debug-enable for prologix print calls ("writing: :OUT:A ON")
+
+
+### Notes
+
+- with multiple devices, does the address change need to be done manually? delay?
+- are powered off devices blocking the bus?
+- 
