@@ -66,7 +66,8 @@ class usb:
         if(self.log_level>0):
             print('[r|' + str(self.address) + '] ', end = '') # end -> no \n
         val = self.instr.read()
-        print(val)
+        if(self.log_level>0):
+            print(val)
         return val
     
     def read_until_char(self, address, char):
@@ -77,7 +78,8 @@ class usb:
         if(self.log_level>0):
             print('[r|' + str(self.address) + '] ', end = '') # end -> no \n
         val = self.instr.read()
-        print(val)
+        if(self.log_level>0):
+            print(val)
         return val
     
     def request(self, address, message):
@@ -118,7 +120,8 @@ class usb:
             print('[w|-] ++spoll', end='')
         val = self.instr.query('++spoll')
         #val = self.instr.read()
-        print(' [r|-] ' + str(val), end='')
+        if(self.log_level>0):
+            print(' [r|-] ' + str(val), end='')
         return val
     
     def loc(self):

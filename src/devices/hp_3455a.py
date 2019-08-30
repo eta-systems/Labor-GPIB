@@ -98,7 +98,7 @@ class device:
         elif(mode in ['adc', 'acv', 'vac']):
             self.measurement_type = 2
             self.bus.write(self.address, 'F2')
-        elif(mode in ['vdcvac', 'dcvacv', 'acdc']):
+        elif(mode in ['fast ac']):
             self.measurement_type = 3
             self.bus.write(self.address, 'F3')
         elif(mode in ['2 wire kohms', '2 wire kr']):
@@ -107,6 +107,7 @@ class device:
         elif(mode in ['4 wire kohms', '4 wire kr']):
             self.measurement_type = 5
             self.bus.write(self.address, 'F5')
+        # TODO: this does not have shift function ????
         elif(mode in ['shift', 'shift on', 'shifted']):
             self.measurement_type = 6
             self.bus.write(self.address, 'S1')

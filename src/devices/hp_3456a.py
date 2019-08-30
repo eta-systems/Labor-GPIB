@@ -134,7 +134,7 @@ class device:
         self.clear()
         self.measurement('vdc')
         self.range('auto')
-        self.trigger_mode('hold')
+        self.trigger_mode('internal')
         # self.math_mode('Off')
         # self.enable_high_resolution(False)
         # self.enable_auto_cal(False)
@@ -247,11 +247,14 @@ class device:
             self.bus.write(self.address, 'TE0')
 
     def read_voltage(self):
+        val = self.bus.read_until_char(self.address, '10')
+        return val
+    
+    def trg_read_voltage(self):
         self.bus.trg()
         self.bus.spoll()
         val = self.bus.read_until_char(self.address, '10')
         return val
-        
         
         
         

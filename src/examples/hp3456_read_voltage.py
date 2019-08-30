@@ -7,19 +7,38 @@ import devices.hp_3456a as hp3456
 import numpy as np
 import matplotlib.pyplot as plt
 
-iface = prologix.usb(com='ASRLCOM31::INSTR', baudrate=19200, timeout=5000, log_level=1)
+time_ms = lambda: int(round(time.time() * 1000))
 
+tim = time_ms()
+
+def tic():
+    global tim
+    tim = time_ms()
+    
+def toc():
+    global tim
+    elapsed = time_ms() - tim
+    print('Elapsed time: ' + str(elapsed) + ' ms')
+    tim = time_ms()
+    
+tic()
+toc()
+
+iface = prologix.usb(com='ASRLCOM31::INSTR', baudrate=115200, timeout=5000, log_level=1)
 dvm = hp3456.device(iface, 8)  # address 8 on prologix interface
 dvm.measurement('vac')
-dvm.trigger_mode('hold')
+dvm.trigger_mode('internal')
 
-for k in range(0,3):
-    dvm.measurement('vdc')
-    print('DC: ' + str(dvm.read_voltage()))
-    dvm.measurement('vac')
-    print('AC: ' + str(dvm.read_voltage()))
+for i in range(0,10):
+    tic()
+    val = iface.read_until_char(8, '10')
+    val = iface.read_until_char(8, '10')
+    val = iface.read_until_char(8, '10')
+    toc()
     
 iface.close()
+
+# F2T1
 
 
 #%%

@@ -10,10 +10,7 @@ This Software is distributed WITHOUT ANY WARRANTY;
 without even the implied warranty of MERCHANTABILITY 
 or FITNESS FOR A PARTICULAR PURPOSE. 
 """
-
 """
-NOT FUNCTIONAL !
-
 Measure the efficiency of a DC/DC converter
 
 Constant input voltage with variable load
@@ -24,8 +21,8 @@ Channel B: DC-Load:   Variable Current: 0.1 - 2.5A
               +---------+
     +---------+DC       +---------------+
     |         |         |---------+     |
-(A) |         |         |-------+ |     | (B)      ---> HP3456A (AC ripple)
-13V |     +---+       DC+---+   | |     | 0.1-2.5A
+(A) |         |         |-------+ |     | (B)      ---> HP3456A (DC)
+13V |     +---+       DC+---+   | |     | 0.1-2.5A ---> HP3455A (AC ripple)
     |     |   +---------+   |   | |     |
     _     _                 _  (sense)  _
 
@@ -36,6 +33,7 @@ import interface.prologix_gpib as prologix
 
 import devices.rohde_schwarz_ngmo2 as ngmo2
 import devices.hp_3456a as hp3456
+import devices.hp_3455a as hp3455
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -43,30 +41,46 @@ import utilities.Exporter as Exporter
 
 # PARAMETERS
 SOURCE_CONST_VOLT = 14.0  # prototype requires 14.0V
-LOAD_CURRENT_MAX = 1.0
+LOAD_CURRENT_MAX = 1.2
 LOAD_CURRENT_MIN = 0.05
 DELTA_LOAD_CURRENT = LOAD_CURRENT_MAX - LOAD_CURRENT_MIN
-DPOINTS = 100
-DELAY_LOAD_SET = 0.5
+DPOINTS = 25
+DELAY_LOAD_SET = 0.6
 DELAY_MEAS_TRIG = 0.005
-AVER_REPEATS = 5
 NGMO_ADDR = 7
-HP34_ADDR = 8
+HP3456_ADDR = 8
+HP3455_ADDR = 12
+
+time_ms = lambda: int(round(time.time() * 1000))
+tim = time_ms()
+def tic():
+    global tim
+    tim = time_ms()
+def toc():
+    global tim
+    elapsed = time_ms() - tim
+    print('Elapsed time: ' + str(elapsed) + ' ms')
+    tim = time_ms()
+tic()
+toc()
 
 #%%
-tic = time.time()
+#tic = time.time()
 iface = prologix.usb(com='ASRLCOM31::INSTR', baudrate=19200, timeout=5000, log_level=0)
 iface.loc()  # local mode
 ngmo = ngmo2.device(iface, NGMO_ADDR)
-hp34 = hp3456.device(iface, HP34_ADDR)
+meter_dc = hp3456.device(iface, HP3456_ADDR)
+meter_ac = hp3455.device(iface, HP3455_ADDR)
 
-hp34.clear()
+meter_dc.clear()
+meter_dc.measurement('vdc')
+meter_dc.trigger_mode('internal')
+
+meter_ac.clear()
+meter_ac.measurement('fast ac')
+
 ngmo.clear()
 time.sleep(.100)
-
-print(ngmo.get_idn())
-time.sleep(.100)
-
 #ngmo.display.enable(False)  # high speed mode
 ngmo.format.data('ASCII')
 
@@ -101,19 +115,19 @@ val['load']['power'] = np.zeros(DPOINTS)
 srce.on()
 load.on()
 
+t_start = time_ms()
 for i in range(0, DPOINTS):
     iface.set_address(NGMO_ADDR)
     current = round(DELTA_LOAD_CURRENT/DPOINTS * i, 5)
     iface.write(NGMO_ADDR, ':SOUR:B:CURR:LIM ' + str(abs(current)))
     time.sleep(DELAY_LOAD_SET)
-    print('new voltage set')
     
     # read source voltage
     iface.write(NGMO_ADDR, ':SENS:A:FUNC VOLT')
     iface.write(NGMO_ADDR, ':MEAS:A?')
     time.sleep(DELAY_MEAS_TRIG)
     r = iface.read_until_char(NGMO_ADDR, '10')
-    print('Vsrc: ' + str(r))
+    # print('Vsrc: ' + str(r))
     val['source']['voltage'][i] = float(r)
     
     # read source current
@@ -121,7 +135,7 @@ for i in range(0, DPOINTS):
     iface.write(NGMO_ADDR, ':MEAS:A?')
     time.sleep(DELAY_MEAS_TRIG)
     r = iface.read_until_char(NGMO_ADDR, '10')
-    print('Isrc' + str(r))
+    # print('Isrc' + str(r))
     val['source']['current'][i] = float(r)
     
     # read load voltage
@@ -129,7 +143,7 @@ for i in range(0, DPOINTS):
     iface.write(NGMO_ADDR, ':MEAS:B?')
     time.sleep(DELAY_MEAS_TRIG)
     r = iface.read_until_char(NGMO_ADDR, '10')
-    print('Vload ' + str(r))
+    # print('Vload ' + str(r))
     val['load']['voltage'][i] = r
     
     # read load current
@@ -137,40 +151,29 @@ for i in range(0, DPOINTS):
     iface.write(NGMO_ADDR, ':MEAS:B?')
     time.sleep(DELAY_MEAS_TRIG)
     r = iface.read_until_char(NGMO_ADDR, '10')
-    print('Iload ' + str(r))
+    # print('Iload ' + str(r))
     val['load']['current'][i] = r
     
+    tic()
     # read load VDC
-    iface.set_address(HP34_ADDR)
-    vdc = np.zeros(AVER_REPEATS)
-    hp34.measurement('vdc')
-    time.sleep(0.05)
-    for k in range(0, AVER_REPEATS):
-        vdc[k] = hp34.read_voltage()
-        time.sleep(DELAY_MEAS_TRIG)
-    print('VDC ' + str(vdc))
-    val['load']['vdc'][i] = np.average(vdc)
+    iface.set_address(HP3456_ADDR)
+    vdc = meter_dc.read_voltage()
+    # print('VDC ' + str(vdc))
+    val['load']['vdc'][i] = vdc
     
     # read load VAC
-    vac = np.zeros(AVER_REPEATS)
-    hp34.measurement('vac')
-    time.sleep(0.05)
-    for k in range(0, AVER_REPEATS):
-        vac[k] = hp34.read_voltage()
-        time.sleep(DELAY_MEAS_TRIG)
-    print('VAC ' + str(vac))
-    val['load']['vac'][i] = np.average(vac)
-
-    print('PROGRESS: ' + str(i) + '/' + str(DPOINTS))
+    iface.set_address(HP3456_ADDR)
+    vac = meter_ac.read_voltage()
+    # print('VAC ' + str(vac))
+    val['load']['vac'][i] = vac
+    print('PROGRESS: ' + str(i+1) + '/' + str(DPOINTS))
+    toc()
     
 srce.off()
 load.off()
 iface.close()
+print('Total time: ' + str(time_ms() - t_start) + ' ms')
 
-toc = time.time()
-elapsed = tic - toc
-print('Elapsed Time: ' + str(elapsed))
-#%%
 val['load']['current'] = val['load']['current'] * (-1)
 val['source']['power'] = val['source']['voltage'] * val['source']['current']
 val['load']['power']   = val['load']['voltage']   * val['load']['current']
@@ -218,27 +221,41 @@ plt.grid()
 #plt.savefig('Efficiency_vs_LoadResistance.png', dpi=200)
 
 #%%
+# apply polyfit
+degree = 8
+coef = np.polyfit(val['load']['current'][1:], val['efficiency2'][1:], degree)
+n = len(val['load']['current'])
+x = np.linspace(val['load']['current'][1], val['load']['current'][-1], n)
+y = np.zeros(n)
+for i in range(degree):
+    y = y + pow(x, degree-i) * coef[i]
+y = y + coef[degree]
+
 plt.figure(figsize=(8,5))
-plt.plot(val['load']['current'][2:], val['efficiency'][2:])
-plt.plot(val['load']['current'][2:], val['efficiency2'][2:])
+plt.plot(val['load']['current'][1:], val['efficiency'][1:], marker='x', linestyle='None', color='cornflowerblue')
+plt.plot(val['load']['current'][1:], val['efficiency2'][1:], marker='x', linestyle='None', color='sandybrown')
+plt.plot(x, y, marker='None', linestyle='solid', color='deeppink')
 plt.ylim(0.55, 0.90)
 plt.xlabel(r'load current $I_L$ [A]')
 plt.ylabel(r'efficiency coefficient $\eta$')
 plt.title('Efficiency vs. Load Current')
-plt.legend(['load voltage was measured with R&S NGMO2', 'load voltage was measured with HP 3456A'])
+plt.legend(['load voltage was measured with R&S NGMO2', 
+            'load voltage was measured with HP 3456A', 
+            'polinominal fit (degree: ' + str(degree) + ')'])
 plt.grid()
 #plt.savefig('Efficiency_vs_LoadCurrent.pdf')
-plt.savefig('Efficiency_vs_LoadCurrent_NGMO2vsHP3456.png', dpi=200)  # 200dpi -> 1600x1000
+plt.savefig('Efficiency_vs_LoadCurrent_NGMO2_HP3455_HP3456.png', dpi=200)  # 200dpi -> 1600x1000
 
 #%%
-plt.figure(figsize=(16,9))
+plt.figure(figsize=(8,5))
 plt.plot(val['load']['current'], val['load']['vdc'])
 plt.plot(val['load']['current'], val['load']['voltage'])
 
 #%%
-plt.figure(figsize=(16,9))
+plt.figure(figsize=(8,5))
 plt.plot(val['load']['current'][1:], val['load']['vac'][1:])
-plt.ylim(0.0, 0.002)
+plt.grid()
+plt.ylim(0.0, 0.005)
 
 
 
