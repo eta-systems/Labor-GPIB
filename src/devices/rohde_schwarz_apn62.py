@@ -40,5 +40,7 @@ class device:
         val = self.bus.read_until_char(self.address, '10')  # ASCII 10 = LF
         return val   
     
+    def set_frequency(self, freq):
+        self.bus.write(self.address, 'FR ' + str(freq) + 'HZ')
 
 

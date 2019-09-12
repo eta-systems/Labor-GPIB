@@ -5,22 +5,10 @@ Created on Thu Sep 12 11:52:46 2019
 @author: simon
 """
 
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Sep 12 11:28:06 2019
-
-@author: simon
-"""
-
-
 import time
 import interface.prologix_gpib as prologix
-
 import devices.rohde_schwarz_upa as upaa
 
-import numpy as np
-import matplotlib.pyplot as plt
-import utilities.Exporter as Exporter
 
 # PARAMETERS
 ADDR_UPA = 2

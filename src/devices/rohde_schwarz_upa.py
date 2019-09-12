@@ -21,6 +21,16 @@ UPA Audio Analyzer
 
 
 
+DISTORTION(TOTAL)
+TRIGGER(SINGLE)
+++read 10
+MACVOLT   010.56E+0  MEAHZ     30.000E+0
+TRIGGER(MODE(FNCT))
+TRIGGER(SINGLE)
+++read 10
+++read 10
+DISPC     0.0169E+0
+
 """
 
 class device:

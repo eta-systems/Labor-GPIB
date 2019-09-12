@@ -5,15 +5,9 @@ Created on Thu Sep 12 11:28:06 2019
 @author: simon
 """
 
-
 import time
 import interface.prologix_gpib as prologix
-
 import devices.rohde_schwarz_apn62 as apn62
-
-import numpy as np
-import matplotlib.pyplot as plt
-import utilities.Exporter as Exporter
 
 # PARAMETERS
 ADDR_APN = 6
