@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Sep 12 11:19:12 2019
+Created on Thu Sep 12 11:44:36 2019
 
 @author: simon
 
@@ -12,15 +12,15 @@ or FITNESS FOR A PARTICULAR PURPOSE.
 """
 
 """
-*RST
-FREQ 15.625KHZ
-FREQ?;LEV?
-++read 10
-FREQUENCY 15625;LEVEL 10.00E-3
-FREQUENCY 15625
-FR?
-++read 10
-FREQUENCY 15625
+UPA Audio Analyzer
+
+// personal comment:
+    - this device has an unusual (ugly) syntax
+    - use braces ()
+    - lower case is not supported
+
+
+
 """
 
 class device:
@@ -28,9 +28,9 @@ class device:
         self.bus = iface
         self.address = address
 
-    # Returns the APN to the *RST default conditions
+    # Returns the UPA to the *RST default conditions
     def rst(self):
-        self.bus.write(self.address, '*RST')
+        self.bus.write(self.address, 'CLR')
 
     def write(self, text):
         self.bus.write(self.address, text)
