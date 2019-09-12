@@ -45,7 +45,7 @@ DELAY_MEAS_TRIG = 0.005
 
 
 #%%
-iface = prologix.usb(com='ASRL31::INSTR', baudrate=19200, timeout=5000, log_level=0)
+iface = prologix.usb(com='ASRLCOM31::INSTR', baudrate=19200, timeout=5000, log_level=0)
 iface.loc()  # local mode
 
 psu = hp6624a.device(iface, PSU_ADDR)
