@@ -11,6 +11,8 @@ for hp 3488a switch control unit
 
 page 63, standard commands
 
+Scan for available cards in slots 1-5
+
 CTYPE 1
 ++read 10
 VHF SW     44472
@@ -116,18 +118,26 @@ class device:
         
     def set_slot(self, slot, card):
         if(card in range(44470, 44476)):
-            self.cards[slot] = Card(self, slot, card)
+            self.cards[slot-1] = Card(self, slot, card)
         else:
             raise ValueError('Card out of range')
         
     def channel(self, slot):
-        return self.cards[slot]
+        return self.cards[slot-1]
+    
+    def idn(self):
+        return self.bus.request(self.address, 'ID?')
+    
+    def print_available_cards(self):
+        for a in range(1, 6):
+            self._write('CTYPE ' + str(a))
+            print('Slot: ' + str(a) + ' = Crad: ' + str(self.read_val()))
 
         
 class Card:
     def __init__(self, motherboard, slot, card):
         self.mother = motherboard
-        self.ch_range = range(0, 11)
+        self.ch_range = range(0, 16)
         self.slot = slot
         self.card = card
         
@@ -153,7 +163,12 @@ class Card:
             self.mother._write('CLOSE ' + str(self.slot) + str("{:02d}".format(channel)))
         else:
             raise ValueError('channel out of range')
-
+            
+    def reset(self):
+        self.mother._write('CRESET ' + str(self.slot))
+        
+        
+        
 """
 VIEW 401
 ++read 10

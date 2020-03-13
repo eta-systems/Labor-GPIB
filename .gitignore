@@ -1,4 +1,8 @@
 # Byte-compiled / optimized / DLL files
+
+# don't include the PDF manuals of the devices
+manuals/
+
 __pycache__/
 *.py[cod]
 *$py.class
